@@ -21,7 +21,7 @@ async function fetchSuggestions(query) {
   return data.rows || [];
 }
 
-export default function AddressAutocomplete({ onSelect, disabled }) {
+export default function AddressAutocomplete({ onSelect, onChange, disabled }) {
   const [value, setValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [open, setOpen] = useState(false);
@@ -55,6 +55,7 @@ export default function AddressAutocomplete({ onSelect, disabled }) {
   function handleChange(e) {
     const v = e.target.value;
     setValue(v);
+    if (onChange) onChange(v);
     debouncedFetch(v);
   }
 

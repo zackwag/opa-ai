@@ -350,6 +350,7 @@ function App() {
             <label htmlFor="address">Your Property Address</label>
             <AddressAutocomplete
               onSelect={(addr) => { setAddress(addr); doSearch(addr); }}
+              onChange={(val) => setAddress(val)}
               disabled={loading}
             />
           </div>
