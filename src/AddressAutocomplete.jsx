@@ -94,7 +94,7 @@ export default function AddressAutocomplete({ onSelect, onChange, disabled }) {
       <input
         id="address"
         type="text"
-        placeholder="e.g. 1838 S 4th St"
+        placeholder="e.g. 1701 JFK BLVD"
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
