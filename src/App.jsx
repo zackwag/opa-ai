@@ -363,6 +363,7 @@ function App() {
             <header className="app-header">
                 <h1>Property Assessment Appeal Tool</h1>
                 <p>Find comparable nearby homes assessed lower than yours to support a tax assessment appeal</p>
+                <span className="version-badge">v{__APP_VERSION__}</span>
             </header>
 
             <section className="search-section">
