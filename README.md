@@ -32,9 +32,9 @@ If you've never used Docker before, here's how to get started:
 
 Download and install Docker Desktop for your operating system:
 
-- **Mac:** https://docs.docker.com/desktop/install/mac-install/
-- **Windows:** https://docs.docker.com/desktop/install/windows-install/
-- **Linux:** https://docs.docker.com/desktop/install/linux/
+- **Mac:** <https://docs.docker.com/desktop/install/mac-install/>
+- **Windows:** <https://docs.docker.com/desktop/install/windows-install/>
+- **Linux:** <https://docs.docker.com/desktop/install/linux/>
 
 After installing, open Docker Desktop and wait for it to say "Running" (green icon in your system tray/menu bar).
 
@@ -43,14 +43,14 @@ After installing, open Docker Desktop and wait for it to say "Running" (green ic
 Open a terminal (Terminal on Mac, Command Prompt or PowerShell on Windows) and run:
 
 ```sh
-docker run -d -p 8080:80 zackwag/opa-ai
+docker run --name opa-ai -p 8080:80 -d zackwag/opa-ai
 ```
 
 That's it. This downloads the app and starts it.
 
 ### 3. Open in Your Browser
 
-Go to: **http://localhost:8080**
+Go to: **<http://localhost:8080>**
 
 ### 4. Stopping the App
 
@@ -83,7 +83,7 @@ npm install
 npm run dev
 ```
 
-The dev server runs at http://localhost:5173.
+The dev server runs at <http://localhost:5173>.
 
 To build for production:
 

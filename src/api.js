@@ -28,6 +28,18 @@ function buildQuery(sql) {
   return `${CARTO_URL}?q=${encodeURIComponent(sql)}`;
 }
 
+export function escapeString(val) {
+  return String(val).replaceAll('\\', '\\\\').replaceAll("'", "''");
+}
+
+function sanitizeNumber(val) {
+  const num = Number(val);
+  if (!Number.isFinite(num)) {
+    throw new Error(`Invalid numeric value: ${val}`);
+  }
+  return num;
+}
+
 const STREET_ABBREVIATIONS = {
   'street': 'ST', 'st': 'ST',
   'avenue': 'AVE', 'ave': 'AVE',
@@ -65,7 +77,9 @@ const ORDINAL_MAP = {
 
 function normalizeOrdinal(word) {
   const lower = word.toLowerCase();
-  if (ORDINAL_MAP[lower]) return ORDINAL_MAP[lower];
+  if (ORDINAL_MAP[lower]) {
+    return ORDINAL_MAP[lower];
+  }
   const match = word.match(/^(\d+)(st|nd|rd|th)?$/i);
   if (match) {
     const num = match[1];
@@ -82,7 +96,7 @@ function normalizeOrdinal(word) {
 }
 
 export function normalizeAddress(input) {
-  let addr = input.trim().toUpperCase().replace(/\./g, '').replace(/\s+/g, ' ');
+  let addr = input.trim().toUpperCase().replaceAll('.', '').replace(/\s+/g, ' ');
   const parts = addr.split(' ');
   const normalized = [];
 
@@ -108,12 +122,16 @@ export function normalizeAddress(input) {
 }
 
 export async function searchProperty(address) {
-  const normalized = normalizeAddress(address).replace(/'/g, "''");
+  const normalized = escapeString(normalizeAddress(address));
   const sql = `SELECT ${FIELDS} FROM opa_properties_public WHERE UPPER(location) LIKE '%${normalized}%' LIMIT 10`;
   const res = await fetch(buildQuery(sql));
-  if (!res.ok) throw new Error('Failed to search properties');
+  if (!res.ok) {
+    throw new Error('Failed to search properties');
+  }
   const data = await res.json();
-  if (data.error) throw new Error(data.error[0] || 'Query error');
+  if (data.error) {
+    throw new Error(data.error[0] || 'Query error');
+  }
   return data.rows || [];
 }
 
@@ -125,42 +143,46 @@ export async function findLowerComps(subject, radiusMeters = 800) {
   }
 
   // Geographic proximity — within radius
-  const point = `ST_SetSRID(ST_MakePoint(${subject.lng}, ${subject.lat}), 4326)::geography`;
-  conditions.push(`ST_DWithin(the_geom::geography, ${point}, ${radiusMeters})`);
+  const lng = sanitizeNumber(subject.lng);
+  const lat = sanitizeNumber(subject.lat);
+  const safeRadius = sanitizeNumber(radiusMeters);
+  const point = `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
+  conditions.push(`ST_DWithin(the_geom::geography, ${point}, ${safeRadius})`);
 
   if (subject.category_code) {
-    conditions.push(`category_code = '${subject.category_code}'`);
+    conditions.push(`category_code = '${escapeString(subject.category_code)}'`);
   }
 
   if (subject.total_livable_area) {
-    const area = parseInt(subject.total_livable_area);
+    const area = sanitizeNumber(Number.parseInt(subject.total_livable_area, 10));
     const low = Math.round(area * 0.7);
     const high = Math.round(area * 1.3);
     conditions.push(`total_livable_area BETWEEN ${low} AND ${high}`);
   }
 
   if (subject.number_of_bedrooms) {
-    const beds = parseInt(subject.number_of_bedrooms);
+    const beds = sanitizeNumber(Number.parseInt(subject.number_of_bedrooms, 10));
     conditions.push(`number_of_bedrooms BETWEEN ${beds - 1} AND ${beds + 1}`);
   }
 
   if (subject.number_of_bathrooms) {
-    const baths = parseInt(subject.number_of_bathrooms);
+    const baths = sanitizeNumber(Number.parseInt(subject.number_of_bathrooms, 10));
     conditions.push(`number_of_bathrooms BETWEEN ${baths - 1} AND ${baths + 1}`);
   }
 
   if (subject.year_built) {
-    const year = parseInt(subject.year_built);
-    if (!isNaN(year)) {
-      conditions.push(`year_built != '' AND year_built IS NOT NULL AND year_built::int BETWEEN ${year - 25} AND ${year + 25}`);
+    const year = Number.parseInt(subject.year_built, 10);
+    if (!Number.isNaN(year)) {
+      const safeYear = sanitizeNumber(year);
+      conditions.push(`year_built != '' AND year_built IS NOT NULL AND year_built::int BETWEEN ${safeYear - 25} AND ${safeYear + 25}`);
     }
   }
 
-  conditions.push(`parcel_number != '${subject.parcel_number}'`);
+  conditions.push(`parcel_number != '${escapeString(subject.parcel_number)}'`);
   conditions.push(`market_value > 0`);
 
   if (subject.market_value) {
-    conditions.push(`market_value <= ${parseInt(subject.market_value)}`);
+    conditions.push(`market_value <= ${sanitizeNumber(Number.parseInt(subject.market_value, 10))}`);
   }
 
   const distanceExpr = `ST_Distance(the_geom::geography, ${point}) as distance_m`;
@@ -168,9 +190,13 @@ export async function findLowerComps(subject, radiusMeters = 800) {
   const sql = `SELECT ${COMP_FIELDS}, ${distanceExpr} FROM opa_properties_public WHERE ${where} ORDER BY distance_m LIMIT 100`;
 
   const res = await fetch(buildQuery(sql));
-  if (!res.ok) throw new Error('API request failed');
+  if (!res.ok) {
+    throw new Error('API request failed');
+  }
   const data = await res.json();
-  if (data.error) throw new Error(data.error[0] || 'Query error');
+  if (data.error) {
+    throw new Error(data.error[0] || 'Query error');
+  }
   return data.rows || [];
 }
 
@@ -179,12 +205,16 @@ export function scoreSimilarity(subject, comp) {
   let maxScore = 0;
 
   function compare(field, weight, tolerance) {
-    const sv = parseFloat(subject[field]);
-    const cv = parseFloat(comp[field]);
-    if (isNaN(sv) || isNaN(cv)) return;
+    const sv = Number.parseFloat(subject[field]);
+    const cv = Number.parseFloat(comp[field]);
+    if (Number.isNaN(sv) || Number.isNaN(cv)) {
+      return;
+    }
     maxScore += weight;
     if (tolerance === 0) {
-      if (sv === cv) score += weight;
+      if (sv === cv) {
+        score += weight;
+      }
     } else {
       const diff = Math.abs(sv - cv) / (tolerance || 1);
       score += weight * Math.max(0, 1 - diff);
@@ -206,18 +236,22 @@ export function scoreSimilarity(subject, comp) {
 
   if (subject.central_air && comp.central_air) {
     maxScore += 5;
-    if (subject.central_air === comp.central_air) score += 5;
+    if (subject.central_air === comp.central_air) {
+      score += 5;
+    }
   }
 
   if (subject.basements && comp.basements) {
     maxScore += 5;
-    if (subject.basements === comp.basements) score += 5;
+    if (subject.basements === comp.basements) {
+      score += 5;
+    }
   }
 
   if (subject.exterior_condition && comp.exterior_condition) {
     maxScore += 10;
-    const diff = Math.abs(parseInt(subject.exterior_condition) - parseInt(comp.exterior_condition));
-    if (!isNaN(diff)) {
+    const diff = Math.abs(Number.parseInt(subject.exterior_condition, 10) - Number.parseInt(comp.exterior_condition, 10));
+    if (!Number.isNaN(diff)) {
       score += 10 * Math.max(0, 1 - diff / 4);
     }
   }
@@ -230,13 +264,16 @@ export async function findRecentSales(subject, radiusMeters = 800, yearsBack = 2
     throw new Error('Property has no geographic coordinates');
   }
 
-  const point = `ST_SetSRID(ST_MakePoint(${subject.lng}, ${subject.lat}), 4326)::geography`;
+  const lng = sanitizeNumber(subject.lng);
+  const lat = sanitizeNumber(subject.lat);
+  const safeRadius = sanitizeNumber(radiusMeters);
+  const point = `ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography`;
   const conditions = [];
 
-  conditions.push(`ST_DWithin(the_geom::geography, ${point}, ${radiusMeters})`);
+  conditions.push(`ST_DWithin(the_geom::geography, ${point}, ${safeRadius})`);
 
   if (subject.category_code) {
-    conditions.push(`category_code = '${subject.category_code}'`);
+    conditions.push(`category_code = '${escapeString(subject.category_code)}'`);
   }
 
   // Filter to actual arm's-length sales (exclude $1 transfers, sheriff sales under $1000, etc.)
@@ -245,11 +282,11 @@ export async function findRecentSales(subject, radiusMeters = 800, yearsBack = 2
   // Recent sales only
   const cutoff = new Date();
   cutoff.setFullYear(cutoff.getFullYear() - yearsBack);
-  conditions.push(`sale_date >= '${cutoff.toISOString().split('T')[0]}'`);
+  conditions.push(`sale_date >= '${escapeString(cutoff.toISOString().split('T')[0])}'`);
 
   // Similar size
   if (subject.total_livable_area) {
-    const area = parseInt(subject.total_livable_area);
+    const area = sanitizeNumber(Number.parseInt(subject.total_livable_area, 10));
     const low = Math.round(area * 0.6);
     const high = Math.round(area * 1.4);
     conditions.push(`total_livable_area BETWEEN ${low} AND ${high}`);
@@ -257,11 +294,11 @@ export async function findRecentSales(subject, radiusMeters = 800, yearsBack = 2
 
   // Similar beds
   if (subject.number_of_bedrooms) {
-    const beds = parseInt(subject.number_of_bedrooms);
+    const beds = sanitizeNumber(Number.parseInt(subject.number_of_bedrooms, 10));
     conditions.push(`number_of_bedrooms BETWEEN ${beds - 1} AND ${beds + 1}`);
   }
 
-  conditions.push(`parcel_number != '${subject.parcel_number}'`);
+  conditions.push(`parcel_number != '${escapeString(subject.parcel_number)}'`);
 
   const distanceExpr = `ST_Distance(the_geom::geography, ${point}) as distance_m`;
   const where = conditions.join(' AND ');
@@ -269,36 +306,48 @@ export async function findRecentSales(subject, radiusMeters = 800, yearsBack = 2
   const sql = `SELECT ${fields}, ${distanceExpr} FROM opa_properties_public WHERE ${where} ORDER BY sale_date DESC LIMIT 50`;
 
   const res = await fetch(buildQuery(sql));
-  if (!res.ok) throw new Error('API request failed');
+  if (!res.ok) {
+    throw new Error('API request failed');
+  }
   const data = await res.json();
-  if (data.error) throw new Error(data.error[0] || 'Query error');
+  if (data.error) {
+    throw new Error(data.error[0] || 'Query error');
+  }
   return data.rows || [];
 }
 
 export function computeSalesStats(subject, sales) {
-  if (!sales.length) return null;
+  if (!sales.length) {
+    return null;
+  }
 
-  const subjectValue = parseInt(subject.market_value) || 0;
-  const prices = sales.map(s => parseInt(s.sale_price)).filter(v => !isNaN(v) && v > 0);
+  const subjectValue = Number.parseInt(subject.market_value, 10) || 0;
+  const prices = sales.map(s => Number.parseInt(s.sale_price, 10)).filter(v => !Number.isNaN(v) && v > 0);
 
-  if (!prices.length) return null;
+  if (!prices.length) {
+    return null;
+  }
 
   const sorted = [...prices].sort((a, b) => a - b);
   const avg = Math.round(prices.reduce((a, b) => a + b, 0) / prices.length);
   const median = sorted[Math.floor(sorted.length / 2)];
-  const belowAssessment = sales.filter(s => parseInt(s.sale_price) < subjectValue).length;
+  const belowAssessment = sales.filter(s => Number.parseInt(s.sale_price, 10) < subjectValue).length;
   const pctBelow = Math.round((belowAssessment / sales.length) * 100);
 
   return { avg, median, count: prices.length, subjectValue, belowAssessment, pctBelow };
 }
 
 export function computeAppealStats(subject, comps) {
-  if (!comps.length) return null;
+  if (!comps.length) {
+    return null;
+  }
 
-  const subjectValue = parseInt(subject.market_value) || 0;
-  const values = comps.map(c => parseInt(c.market_value)).filter(v => !isNaN(v) && v > 0);
+  const subjectValue = Number.parseInt(subject.market_value, 10) || 0;
+  const values = comps.map(c => Number.parseInt(c.market_value, 10)).filter(v => !Number.isNaN(v) && v > 0);
 
-  if (!values.length) return null;
+  if (!values.length) {
+    return null;
+  }
 
   const sorted = [...values].sort((a, b) => a - b);
   const avg = Math.round(values.reduce((a, b) => a + b, 0) / values.length);

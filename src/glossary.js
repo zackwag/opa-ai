@@ -40,9 +40,13 @@ const LABEL_TO_FIELD = {
 
 export function getTooltip(displayLabel) {
   const fieldKey = LABEL_TO_FIELD[displayLabel];
-  if (!fieldKey) return null;
+  if (!fieldKey) {
+    return null;
+  }
   const entry = glossary[fieldKey];
-  if (!entry || !entry.description) return null;
+  if (!entry?.description) {
+    return null;
+  }
   return entry.description;
 }
 
