@@ -35,16 +35,21 @@ async function fetchSuggestions(query) {
 
 export default function AddressAutocomplete({ value: externalValue, onSelect, onChange, disabled }) {
     const [value, setValue] = useState('');
+    const [prevExternalValue, setPrevExternalValue] = useState(externalValue);
     const [suggestions, setSuggestions] = useState([]);
     const [open, setOpen] = useState(false);
     const [activeIndex, setActiveIndex] = useState(-1);
     const containerRef = useRef(null);
 
-    useEffect(() => {
-        if (externalValue != null && externalValue !== value) {
+    // Sync local state from the externally-controlled value without an
+    // effect (which would cost an extra render pass) -- this is React's
+    // own recommended pattern for "adjusting state when a prop changes".
+    if (externalValue !== prevExternalValue) {
+        setPrevExternalValue(externalValue);
+        if (externalValue != null) {
             setValue(externalValue);
         }
-    }, [externalValue]);
+    }
 
     const debouncedFetch = useRef(
         debounce(async (query) => {
