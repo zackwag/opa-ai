@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.0](https://github.com/zackwag/opa-ai/compare/v1.3.0...v1.4.0) (2026-09-17)
+
+
+### Features
+
+* **ci:** add Lint check, fix pre-existing oxlint warnings ([#21](https://github.com/zackwag/opa-ai/issues/21)) ([9312f4e](https://github.com/zackwag/opa-ai/commit/9312f4e3c5bd345cd780cd626110c44599316052))
+
 ## [1.3.0](https://github.com/zackwag/opa-ai/compare/v1.2.1...v1.3.0) (2026-09-17)
 
 
