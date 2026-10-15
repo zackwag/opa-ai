@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.2](https://github.com/zackwag/opa-ai/compare/v1.4.1...v1.4.2) (2026-10-15)
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump @vitejs/plugin-react from 6.1.1 to 6.1.2 ([#39](https://github.com/zackwag/opa-ai/issues/39)) ([f886147](https://github.com/zackwag/opa-ai/commit/f8861473c97e9eb9f73819510911036f05643376))
+* **deps-dev:** bump oxlint from 1.86.0 to 1.87.0 ([#38](https://github.com/zackwag/opa-ai/issues/38)) ([3a8d7d3](https://github.com/zackwag/opa-ai/commit/3a8d7d39e0ea980e2ec723e9fbbfa59b861a68da))
+* **deps-dev:** bump vite from 8.3.2 to 8.3.4 ([#40](https://github.com/zackwag/opa-ai/issues/40)) ([fa2ff36](https://github.com/zackwag/opa-ai/commit/fa2ff3645bb5471fbab0cf5fc008e78db6c30cb5))
+
 ## [1.4.1](https://github.com/zackwag/opa-ai/compare/v1.4.0...v1.4.1) (2026-10-10)
 
 
