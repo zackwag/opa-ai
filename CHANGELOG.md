@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.3](https://github.com/zackwag/opa-ai/compare/v1.4.2...v1.4.3) (2026-10-21)
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump oxlint from 1.87.0 to 1.88.0 ([#42](https://github.com/zackwag/opa-ai/issues/42)) ([37e0b41](https://github.com/zackwag/opa-ai/commit/37e0b413bdbc156b17be43e57b20d14d85416084))
+* **deps-dev:** bump vitest from 5.0.3 to 5.0.5 ([#45](https://github.com/zackwag/opa-ai/issues/45)) ([58ea129](https://github.com/zackwag/opa-ai/commit/58ea1292ae704df15b8e06578bee85511e34f695))
+* **deps:** bump react-dom from 19.3.0 to 19.3.1 ([#43](https://github.com/zackwag/opa-ai/issues/43)) ([6c2dc58](https://github.com/zackwag/opa-ai/commit/6c2dc5886597009e7421e43f87eae1bf83c40519))
+
 ## [1.4.2](https://github.com/zackwag/opa-ai/compare/v1.4.1...v1.4.2) (2026-10-15)
 
 
