@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.4.4](https://github.com/zackwag/opa-ai/compare/v1.4.3...v1.4.4) (2026-10-29)
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump oxlint from 1.88.0 to 1.89.0 ([#50](https://github.com/zackwag/opa-ai/issues/50)) ([1fea47e](https://github.com/zackwag/opa-ai/commit/1fea47e8e81fc36079def4a8ba22cf7151f4c78b))
+* **deps-dev:** bump vite from 8.3.4 to 8.3.5 ([#49](https://github.com/zackwag/opa-ai/issues/49)) ([066918a](https://github.com/zackwag/opa-ai/commit/066918ab967c7042e0d1bd9b90918b585c5afe7e))
+* **deps:** bump dompurify from 3.4.16 to 3.4.17 ([#47](https://github.com/zackwag/opa-ai/issues/47)) ([dc5f43f](https://github.com/zackwag/opa-ai/commit/dc5f43fe3e40c3c9ddcf8f10924be6e268c91265))
+
 ## [1.4.3](https://github.com/zackwag/opa-ai/compare/v1.4.2...v1.4.3) (2026-10-21)
 
 
