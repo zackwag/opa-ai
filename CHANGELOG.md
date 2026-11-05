@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.5](https://github.com/zackwag/opa-ai/compare/v1.4.4...v1.4.5) (2026-11-04)
+
+
+### Miscellaneous Chores
+
+* **deps-dev:** bump oxlint from 1.89.0 to 1.90.0 ([#51](https://github.com/zackwag/opa-ai/issues/51)) ([5371a11](https://github.com/zackwag/opa-ai/commit/5371a112def22d07ebcce9a4dccec0f0ce6f1efa))
+
 ## [1.4.4](https://github.com/zackwag/opa-ai/compare/v1.4.3...v1.4.4) (2026-10-29)
 
 
