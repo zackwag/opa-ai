@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.6](https://github.com/zackwag/opa-ai/compare/v1.4.5...v1.4.6) (2026-11-11)
+
+
+### Miscellaneous Chores
+
+* fix dependabot commit-message prefixes for conventional commits ([#53](https://github.com/zackwag/opa-ai/issues/53)) ([d128ec2](https://github.com/zackwag/opa-ai/commit/d128ec2f5a0d0c8170f458e24d718597df42a453))
+
 ## [1.4.5](https://github.com/zackwag/opa-ai/compare/v1.4.4...v1.4.5) (2026-11-04)
 
 
